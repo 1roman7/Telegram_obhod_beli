@@ -1,0 +1,55 @@
+name: Build RECNO NETWORK APK
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout RECNO NETWORK Repository
+      uses: actions/checkout@v3
+      with:
+        path: recno_network
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Checkout Official Telegram Android
+      uses: actions/checkout@v3
+      with:
+        repository: DrKLO/Telegram
+        path: Telegram
+        submodules: recursive
+
+    - name: Setup Android NDK
+      run: |
+        echo "Installing NDK..."
+        # Typically handled by gradle automatically in TG, but ensuring env vars:
+        echo "NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
+
+    - name: Apply RECNO NETWORK Patches
+      run: |
+        cd recno_network
+        ./scripts/patch_telegram.sh
+
+    - name: Build APK with Gradle
+      run: |
+        cd Telegram
+        # Write dummy google-services.json and keystore so build doesn't fail
+        echo "{}" > TMessagesProj/google-services.json
+        ./gradlew assembleAfatRelease --no-daemon
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: RECNO_NETWORK_APK
+        path: Telegram/TMessagesProj/build/outputs/apk/afat/release/*.apk
