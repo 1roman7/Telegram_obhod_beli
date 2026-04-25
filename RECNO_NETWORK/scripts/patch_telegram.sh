@@ -62,4 +62,14 @@ else
     echo "Warning: ApplicationLoader.java not found."
 fi
 
+# 5. Pre-compute and bundle working VLESS proxies
+# ⚡ Bolt: Execute the manager script during the GitHub Actions build
+# to generate the list of working proxies beforehand.
+echo "Pre-computing working VLESS proxies..."
+python3 ../scripts/vless_manager.py
+
+# Bundle the result into the Telegram APK's assets
+echo "Bundling working_vless.txt into APK assets..."
+cp working_vless.txt "$TG_DIR/TMessagesProj/src/main/assets/"
+
 echo "Patching completed successfully!"
