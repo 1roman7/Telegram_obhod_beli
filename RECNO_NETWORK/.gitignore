@@ -1,2 +1,4 @@
 RECNO_NETWORK/scripts/__pycache__
 *.pyc
+vless_cache.json
+working_vless.txt
