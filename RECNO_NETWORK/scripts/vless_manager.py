@@ -3,6 +3,7 @@ import time
 import json
 import os
 import subprocess
+import concurrent.futures
 
 SUBSCRIPTION_URLS = [
     "https://raw.githubusercontent.com/zieng2/wl/main/vless_universal.txt",
@@ -62,9 +63,13 @@ def update_configs():
             return []
 
     working_configs = []
-    for config in new_configs:
-        if ping_config(config):
-            working_configs.append(config)
+    print(f"Pinging {len(new_configs)} configs in parallel...")
+    # Using ThreadPoolExecutor to parallelize I/O-bound ping operations.
+    # This significantly reduces the total time taken to verify all configs.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+        results = list(executor.map(ping_config, new_configs))
+
+    working_configs = [config for config, is_working in zip(new_configs, results) if is_working]
 
     if working_configs:
         print(f"Found {len(working_configs)} working configs.")
