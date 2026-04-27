@@ -2,7 +2,6 @@ import urllib.request
 import time
 import json
 import os
-import subprocess
 
 SUBSCRIPTION_URLS = [
     "https://raw.githubusercontent.com/zieng2/wl/main/vless_universal.txt",
